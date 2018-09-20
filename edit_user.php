@@ -3,7 +3,7 @@ require('config.php');
 require('database.class.php');
 
 $database = new database($db_host, $db_name, $db_username, $db_password);
-$edit_user = $database->select_row($_REQUEST, 'users');
+$edit_user = $database->select_row('users', $_REQUEST);
 ?>
 <!DOCTYPE html>
 <html lang="en">

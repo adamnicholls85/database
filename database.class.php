@@ -7,7 +7,7 @@ class database {
 		$this->db = new PDO('mysql:host=' . $db_host . ';dbname=' . $db_name . ';charset=utf8mb4', $db_username, $db_password, array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 	}
 	
-	function insert_row($data, $table) {
+	function insert_row($table, $data) {
 		// Start building query
 		$query = "INSERT INTO " . $table . " (";
 		
@@ -51,7 +51,7 @@ class database {
 		$this->db = null;
 	}
 	
-	function select_row($data, $table) {
+	function select_row($table, $data) {
 		// Start building query
 		$query = "SELECT * FROM " . $table . " WHERE ";
 		
@@ -86,9 +86,31 @@ class database {
 		return $result;
 	}
 	
-	function select_all($table) {
-		// Execute query
-		$stmt = $this->db->query("SELECT * FROM " . $table);
+	function select_all($table, $data = NULL) {
+		// Start building query
+		$query = "SELECT * FROM " . $table;
+		
+		// Check for order, add prepared statements to query, if necessary
+		if($data['order_by'] && $data['order']) {
+			$query .= " ORDER BY " . $data['order_by'] . " " . $data['order'];
+			
+			unset($data['order_by']);
+			unset($data['order']);
+		}
+		
+		// Check for limits, add prepared statements to query, if necessary
+		if(!is_null($data['limit_one']) && !is_null($data['limit_two'])) {
+			$query .= " LIMIT :limit_one, :limit_two";
+			
+			$data[':limit_one'] = $data['limit_one'];
+			$data[':limit_two'] = $data['limit_two'];
+			unset($data['limit_one']);
+			unset($data['limit_two']);
+		}
+		
+		// Prepare, then execute query
+		$stmt = $this->db->prepare($query);
+		$stmt->execute($data);
 		
 		// Grab result
 		$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -100,7 +122,7 @@ class database {
 		return $result;
 	}
 	
-	function update_row($set, $where, $table) {
+	function update_row($table, $set, $where) {
 		// Start building query
 		$query = "UPDATE " . $table . " SET ";
 		
@@ -150,7 +172,7 @@ class database {
 		$this->db = null;
 	}
 	
-	function delete_row($data, $table) {
+	function delete_row($table, $data) {
 		// Start building query
 		$query = "DELETE FROM " . $table . " WHERE ";
 		

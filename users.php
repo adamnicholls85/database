@@ -3,7 +3,12 @@ require('config.php');
 require('database.class.php');
 
 $database = new database($db_host, $db_name, $db_username, $db_password);
-$users = $database->select_all('users');
+
+if($_REQUEST) {
+	$users = $database->select_all('users', $_REQUEST);
+} else {
+	$users = $database->select_all('users');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
